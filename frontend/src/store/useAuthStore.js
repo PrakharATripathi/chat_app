@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { axiosInstance } from "../lib/axios";
 
-const BASE_URL = "https://chattya.netlify.app" 
+const BASE_URL = "https://chat-app-8wm6.onrender.com" 
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -89,6 +89,7 @@ export const useAuthStore = create((set, get) => ({
       query: {
         userId: authUser._id,
       },
+      transports: ["websocket"] 
     });
     socket.connect();
 
