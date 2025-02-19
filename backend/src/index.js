@@ -9,9 +9,8 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.routes.js"
 import messageRoutes from "./routes/message.routes.js";
 import { port } from "./constant/constant.js";
+import { app, server } from "./lib/socket.js";
 // import { app, server } from "./lib/socket.js";
-
-const app = express();
 
 // const __dirname = path.resolve();
 
@@ -35,7 +34,9 @@ app.use("/api/messages", messageRoutes);
 //   });
 // }
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log("server is running on PORT:" + port);
   connectDB();
 });
+
+// https://github.com/burakorkmez/fullstack-chat-app/blob/master/backend/src/seeds/user.seed.js
