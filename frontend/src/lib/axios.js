@@ -1,6 +1,6 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL:  "http://localhost:3000/api",
+  baseURL:  "https://chat-app-t0e4.onrender.com/api",
   withCredentials: true,
 });
