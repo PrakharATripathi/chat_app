@@ -81,13 +81,23 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  connectSocket: () => {
+  connectSocket: async() => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
+
+      // Get the user's groups to join those rooms
+      let userGroups = [];
+      try {
+        const res = await axiosInstance.get("/groups");
+        userGroups = res.data.map(g => g._id);
+      } catch (error) {
+        console.log("Error loading user groups for socket:", error);
+      }
 
     const socket = io(BASE_URL, {
       query: {
         userId: authUser._id,
+        groups: JSON.stringify(userGroups)
       },
       transports: ["websocket"] 
     });
@@ -97,6 +107,20 @@ export const useAuthStore = create((set, get) => ({
 
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
+    });
+
+     // Handle group-related events
+     socket.on("newGroup", (group) => {
+      // Alert about new group addition
+      toast.success(`You've been added to group: ${group.name}`);
+    });
+
+    socket.on("groupDeleted", ({ groupId, groupName }) => {
+      toast.info(`Group "${groupName}" has been deleted`);
+    });
+
+    socket.on("addedToGroup", (group) => {
+      toast.success(`You've been added to group: ${group.name}`);
     });
   },
 

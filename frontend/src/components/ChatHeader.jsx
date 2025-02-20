@@ -1,10 +1,13 @@
 import { X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { useGroupStore } from "../store/useGroupStore";
 
-const ChatHeader = () => {
+const ChatHeader = ({ isGroupChat }) => {
   const { selectedUser, setSelectedUser } = useChatStore();
+  const { selectedGroup, setSelectedGroup } = useGroupStore();
   const { onlineUsers } = useAuthStore();
+
 
   return (
     <div className="p-2.5 border-b border-base-300">
@@ -13,21 +16,29 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName} />
+              <img src={isGroupChat ? selectedGroup?.profilePic || "/avatar.png"  : selectedUser?.profilePic || "/avatar.png"} alt="img" />
             </div>
           </div>
 
           {/* User info */}
           <div>
-            <h3 className="font-medium">{selectedUser.fullName}</h3>
-            <p className="text-sm text-base-content/70">
-              {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
-            </p>
+            <h3 className="font-medium">{isGroupChat ? selectedGroup?.name : selectedUser?.fullName}</h3>
+            {
+              isGroupChat ? (
+                <span className="text-gray-500 text-xs">
+                  {selectedGroup.members.map(member => member.fullName).join(', ')}
+                </span>
+              ) : (
+                <p className="text-sm text-base-content/70">
+                  {onlineUsers?.includes(selectedUser?._id) ? "Online" : "Offline"}
+                </p>
+              )
+            }
           </div>
         </div>
 
         {/* Close button */}
-        <button onClick={() => setSelectedUser(null)}>
+        <button onClick={() => isGroupChat ? setSelectedGroup(null) : setSelectedUser(null)}>
           <X />
         </button>
       </div>

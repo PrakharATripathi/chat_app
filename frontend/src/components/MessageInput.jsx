@@ -2,12 +2,15 @@ import { useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { useGroupStore } from "../store/useGroupStore";
 
-const MessageInput = () => {
+const MessageInput = ({isGroupChat}) => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
+  const {sendGroupMessage} = useGroupStore();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -33,17 +36,26 @@ const MessageInput = () => {
     if (!text.trim() && !imagePreview) return;
 
     try {
-      await sendMessage({
-        text: text.trim(),
-        image: imagePreview,
-      });
-
+      setIsSubmitting(true);
+      if(isGroupChat){
+        await sendGroupMessage({
+          text: text.trim(),
+          image: imagePreview,
+        })
+      }else{
+        await sendMessage({
+          text: text.trim(),
+          image: imagePreview,
+        });
+      }
       // Clear form
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
+    }finally{
+      setIsSubmitting(false);
     }
   };
 
@@ -91,6 +103,7 @@ const MessageInput = () => {
             className={`hidden sm:flex btn btn-circle
                      ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
+            disabled={isSubmitting}
           >
             <Image size={20} />
           </button>
@@ -98,7 +111,7 @@ const MessageInput = () => {
         <button
           type="submit"
           className="btn btn-sm btn-circle"
-          disabled={!text.trim() && !imagePreview}
+          disabled={!text.trim() && !imagePreview || isSubmitting}
         >
           <Send size={22} />
         </button>

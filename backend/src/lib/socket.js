@@ -25,8 +25,26 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId) userSocketMap[userId] = socket.id;
 
+   // Join all group rooms the user is part of
+   if (socket.handshake.query.groups) {
+    const groups = JSON.parse(socket.handshake.query.groups);
+    groups.forEach(groupId => {
+      socket.join(`group:${groupId}`);
+    });
+  }
+
   // io.emit() is used to send events to all the connected clients
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  // Handle joining a new group
+  socket.on("joinGroup", (groupId) => {
+    socket.join(`group:${groupId}`);
+  });
+
+   // Handle leaving a group
+   socket.on("leaveGroup", (groupId) => {
+    socket.leave(`group:${groupId}`);
+  });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);
