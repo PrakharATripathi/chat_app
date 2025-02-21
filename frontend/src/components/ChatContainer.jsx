@@ -23,7 +23,8 @@ const ChatContainer = ({ isGroupChat = false }) => {
     isGroupMessagesLoading,
     selectedGroup,
     subscribeToGroupMessages,
-    unsubscribeFromGroupMessages
+    unsubscribeFromGroupMessages,
+    joinGroupRoom
   } = useGroupStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -32,28 +33,46 @@ const ChatContainer = ({ isGroupChat = false }) => {
   const currentMessages = isGroupChat ? groupMessages : messages;
   const isLoading = isGroupChat ? isGroupMessagesLoading : isMessagesLoading;
 
+  // Effect for handling direct messages
   useEffect(() => {
-    if (isGroupChat) {
-      getGroupMessages(selectedGroup._id);
-      subscribeToGroupMessages();
-      return () => unsubscribeFromGroupMessages();
-    } else {
+    if (!isGroupChat && selectedUser?._id) {
       getMessages(selectedUser._id);
       subscribeToMessages();
       return () => unsubscribeFromMessages();
     }
-  }, [isGroupChat,
+  }, [
+    isGroupChat,
     selectedUser?._id,
-    selectedGroup?._id,
     getMessages,
-    getGroupMessages,
     subscribeToMessages,
+    unsubscribeFromMessages
+  ]);
+
+  // Separate effect for handling group messages
+  useEffect(() => {
+    if (isGroupChat && selectedGroup?._id) {
+      console.log("Loading and subscribing to group:", selectedGroup._id);
+      getGroupMessages(selectedGroup._id);      
+      // Make sure to join the group room
+      joinGroupRoom(selectedGroup._id);  
+      // Set up subscription for real-time updates
+      subscribeToGroupMessages();  
+      return () => {
+        console.log("Unsubscribing from group:", selectedGroup._id);
+        unsubscribeFromGroupMessages();
+      };
+    }
+  }, [
+    isGroupChat,
+    selectedGroup?._id,
+    getGroupMessages,
+    joinGroupRoom,
     subscribeToGroupMessages,
-    unsubscribeFromMessages,
-    unsubscribeFromGroupMessages]);
+    unsubscribeFromGroupMessages
+  ]);
 
   useEffect(() => {
-    if (messageEndRef.current && currentMessages) {
+    if (messageEndRef.current && currentMessages.length > 0) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [currentMessages]);
@@ -69,12 +88,21 @@ const ChatContainer = ({ isGroupChat = false }) => {
   }
 
   const renderMessageSender = (message) => {
-    if (isGroupChat && message.senderId !== authUser._id) {
+    if (isGroupChat && message.senderId && message.senderId._id !== authUser._id) {
       // Find the group member who sent this message
       const sender = selectedGroup.members.find(member => member._id === message.senderId._id);
       return sender?.fullName || "Unknown user";
     }
     return null;
+  };
+
+  const getSenderProfilePic = (message) => {
+    if (isGroupChat) {
+      const senderId = typeof message.senderId === 'object' ? message.senderId._id : message.senderId;
+      const member = selectedGroup.members?.find(m => m._id === senderId);
+      return member?.profilePic || "/avatar.png";
+    }
+    return selectedUser.profilePic || "/avatar.png";
   };
 
   return (
@@ -88,19 +116,15 @@ const ChatContainer = ({ isGroupChat = false }) => {
             className={`chat ${(isGroupChat ? message.senderId._id === authUser._id : message.senderId === authUser._id) ? "chat-end" : "chat-start"}`}
             ref={index === currentMessages.length - 1 ? messageEndRef : null}
           >
-            <div className=" chat-image avatar">
+            <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img
-                  src={
-                   isGroupChat ? 
-                   (selectedGroup.members?.find(member => member._id === message.senderId._id)?.profilePic || "/avatar.png"):
-                   selectedUser.profilePic || "/avatar.png" 
-                  }
+                  src={getSenderProfilePic(message)}
                   alt="profile pic"
                 />
               </div>
             </div>
-            <div className="chat-header ">
+            <div className="chat-header">
               {isGroupChat && message.senderId !== authUser._id && (
                 <span className="font-bold mr-1">{renderMessageSender(message)}</span>
               )}
@@ -126,4 +150,5 @@ const ChatContainer = ({ isGroupChat = false }) => {
     </div>
   );
 };
+
 export default ChatContainer;

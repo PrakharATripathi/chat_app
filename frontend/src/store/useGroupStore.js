@@ -2,8 +2,6 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
-// import { axiosInstance } from "../lib/axios";
-// import { useAuthStore } from "./useAuthStore";
 
 export const useGroupStore = create((set, get) => ({
   groups: [],
@@ -13,6 +11,7 @@ export const useGroupStore = create((set, get) => ({
   isGroupMessagesLoading: false,
   isCreatingGroup: false,
   isUpdatingGroup: false,
+  unreadGroupMessages: {},
 
   // Get all groups for the current user
   getUserGroups: async () => {
@@ -137,7 +136,19 @@ export const useGroupStore = create((set, get) => ({
     set({ isGroupMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/groups/${groupId}/messages`);
-      set({ groupMessages: res.data });
+      set({ groupMessages: res.data,
+         // Clear unread count when opening a group chat
+         unreadGroupMessages: {
+          ...get().unreadGroupMessages,
+          [groupId]: 0
+        }
+       });
+
+        // Make sure to join the group room when getting messages
+      const socket = useAuthStore.getState().socket;
+      if (socket) {
+        socket.emit("joinGroup", groupId);
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load messages");
     } finally {
@@ -148,6 +159,10 @@ export const useGroupStore = create((set, get) => ({
   // Send message to group
   sendGroupMessage: async (messageData) => {
     const { selectedGroup, groupMessages } = get();
+    if (!selectedGroup) {
+      toast.error("No group selected");
+      return;
+    }
     try {
       const res = await axiosInstance.post(`/groups/${selectedGroup._id}/messages`, messageData);
       set({ groupMessages: [...groupMessages, res.data] });
@@ -164,56 +179,176 @@ export const useGroupStore = create((set, get) => ({
     if (!selectedGroup) return;
 
     const socket = useAuthStore.getState().socket;
+    if (!socket) {
+      console.error("Socket not connected");
+      return;
+    }
     
+    // Make sure we're in the group room
+    socket.emit("joinGroup", selectedGroup._id);
+    
+    // Remove any existing listeners to avoid duplicates
+    socket.off("newGroupMessage");
+
     socket.on("newGroupMessage", (newMessage) => {
-      if (newMessage.groupId === selectedGroup._id) {
-        set({
-          groupMessages: [...get().groupMessages, newMessage],
-        });
-      }
+     // Only update messages if it's for the currently selected group
+     if (newMessage.groupId === selectedGroup._id) {
+      set(state => ({
+        groupMessages: [...state.groupMessages, newMessage],
+      }));
+    }
     });
     
     // Subscribe to group updates
+     socket.off("groupUpdated");
     socket.on("groupUpdated", (updatedGroup) => {
-      if (updatedGroup._id === selectedGroup._id) {
-        set({
-          selectedGroup: updatedGroup,
-          groups: get().groups.map(g => g._id === updatedGroup._id ? updatedGroup : g)
-        });
-      }
+      set(state => ({
+        groups: state.groups.map(g => g._id === updatedGroup._id ? updatedGroup : g),
+        selectedGroup: state.selectedGroup?._id === updatedGroup._id ? updatedGroup : state.selectedGroup
+      }));
     });
     
     // Handle being removed from group
+    socket.off("removedFromGroup");
     socket.on("removedFromGroup", ({groupId}) => {
-      if (groupId === selectedGroup._id) {
-        set({ selectedGroup: null });
-      }
-      set({
-        groups: get().groups.filter(g => g._id !== groupId)
-      });
+      set(state => ({
+        selectedGroup: state.selectedGroup?._id === groupId ? null : state.selectedGroup,
+        groups: state.groups.filter(g => g._id !== groupId)
+      }));
     });
+
+    console.log("Subscribed to group messages for group:", selectedGroup._id);
+  },
+
+   // Track unread messages for all groups
+   subscribeToUnreadGroupMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    // // Remove existing listener to avoid duplicates
+    // socket.off("newGroupMessage");
+    
+    // socket.on("newGroupMessage", (newMessage) => {
+    //   const { selectedGroup } = get();
+    //   // If message is for a different group than the one currently open, increment unread count
+    //   if (!selectedGroup || newMessage.groupId !== selectedGroup._id) {
+    //     set(state => {
+    //       const currentCount = state.unreadGroupMessages[newMessage.groupId] || 0;
+    //       return {
+    //         unreadGroupMessages: {
+    //           ...state.unreadGroupMessages,
+    //           [newMessage.groupId]: currentCount + 1
+    //         }
+    //       };
+    //     });
+    //   }
+    // });
+
+    // console.log("Subscribed to unread group messages");
+
+    // Listen specifically for unread group messages with a different event name
+  socket.off("groupMessageNotification");
+  
+  socket.on("groupMessageNotification", (newMessage) => {
+    const { selectedGroup } = get();
+    const authUser = useAuthStore.getState().authUser;
+    
+    // Only count as unread if:
+    // 1. It's not our own message
+    // 2. Either no group is selected or it's for a different group
+    if (
+      newMessage.senderId._id !== authUser._id && 
+      (!selectedGroup || newMessage.groupId !== selectedGroup._id)
+    ) {
+      set(state => {
+        const currentCount = state.unreadGroupMessages[newMessage.groupId] || 0;
+        return {
+          unreadGroupMessages: {
+            ...state.unreadGroupMessages,
+            [newMessage.groupId]: currentCount + 1
+          }
+        };
+      });
+    }
+  });
+
+  console.log("Subscribed to unread group messages");
   },
 
   // Unsubscribe from group updates
   unsubscribeFromGroupMessages: () => {
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    const { selectedGroup } = get();
+    if (selectedGroup) {
+      socket.emit("leaveGroup", selectedGroup._id);
+    }
     socket.off("newGroupMessage");
     socket.off("groupUpdated");
     socket.off("removedFromGroup");
+
+    console.log("Unsubscribed from group messages");
   },
 
-  // Set the selected group
-  setSelectedGroup: (group) => set({ selectedGroup: group }),
+  // Set the selected group and clear unread count
+  setSelectedGroup: (group) => {
+    const previousGroup = get().selectedGroup;
+    
+    // Leave previous group room if any
+    if (previousGroup) {
+      const socket = useAuthStore.getState().socket;
+      if (socket) {
+        socket.emit("leaveGroup", previousGroup._id);
+      }
+    }
+    
+    set(state => {
+      if (group) {
+        // Join new group room
+        const socket = useAuthStore.getState().socket;
+        if (socket) {
+          socket.emit("joinGroup", group._id);
+        }
+        // Clear unread count when selecting a group
+        return {
+          selectedGroup: group,
+          unreadGroupMessages: {
+            ...state.unreadGroupMessages,
+            [group._id]: 0
+          }
+        };
+      } else {
+        return { selectedGroup: null };
+      }
+    });
+  },
 
+   // Clear all unread counts for a specific group
+   clearUnreadGroupMessages: (groupId) => {
+    set(state => ({
+      unreadGroupMessages: {
+        ...state.unreadGroupMessages,
+        [groupId]: 0
+      }
+    }));
+  },
+  
   // Join a group's socket room
   joinGroupRoom: (groupId) => {
     const socket = useAuthStore.getState().socket;
-    socket.emit("joinGroup", groupId);
+    if (socket) {
+      socket.emit("joinGroup", groupId);
+      console.log("Manually joining group room:", groupId);
+    }
   },
 
   // Leave a group's socket room
   leaveGroupRoom: (groupId) => {
     const socket = useAuthStore.getState().socket;
-    socket.emit("leaveGroup", groupId);
+    if (socket) {
+      socket.emit("leaveGroup", groupId);
+      console.log("Manually leaving group room:", groupId);
+    }
   },
 }));

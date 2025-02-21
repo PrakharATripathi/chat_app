@@ -2,6 +2,8 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { axiosInstance } from "../lib/axios";
+import { useChatStore } from "./useChatStore";
+import { useGroupStore } from "./useGroupStore";
 
 const BASE_URL = "http://localhost:4000" 
 
@@ -94,6 +96,11 @@ export const useAuthStore = create((set, get) => ({
         console.log("Error loading user groups for socket:", error);
       }
 
+      // Close existing socket if any
+    if (get().socket) {
+      get().socket.disconnect();
+    }
+
     const socket = io(BASE_URL, {
       query: {
         userId: authUser._id,
@@ -102,7 +109,15 @@ export const useAuthStore = create((set, get) => ({
       transports: ["websocket"] 
     });
     socket.connect();
+    console.log("Socket connecting...");
 
+    socket.on("connect", () => {
+      console.log("Socket connected successfully");
+    });
+    
+    socket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
     set({ socket: socket });
 
     socket.on("getOnlineUsers", (userIds) => {
@@ -113,18 +128,46 @@ export const useAuthStore = create((set, get) => ({
      socket.on("newGroup", (group) => {
       // Alert about new group addition
       toast.success(`You've been added to group: ${group.name}`);
+      // Join the new group's room
+      socket.emit("joinGroup", group._id);
+      // Update groups list
+      useGroupStore.getState().getUserGroups();
     });
 
     socket.on("groupDeleted", ({ groupId, groupName }) => {
       toast.info(`Group "${groupName}" has been deleted`);
+       // Leave the group room
+       socket.emit("leaveGroup", groupId);
+       // Update groups list
+       useGroupStore.getState().getUserGroups();
     });
 
     socket.on("addedToGroup", (group) => {
       toast.success(`You've been added to group: ${group.name}`);
+       // Join the group room
+       socket.emit("joinGroup", group._id);
+       // Update groups list
+       useGroupStore.getState().getUserGroups();
     });
+
+    socket.on("newGroupMessage", (message) => {
+      console.log("New group message received via socket:", message);
+      // The handling of this event is now in useGroupStore
+    });
+
+      // Subscribe to unread messages
+      setTimeout(() => {
+        useChatStore.getState().subscribeToUnreadMessages();
+        useGroupStore.getState().subscribeToUnreadGroupMessages();
+      }, 500);
+      
   },
 
   disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
+    if (get().socket?.connected){
+      get().socket.disconnect();
+      set({ socket: null });
+      console.log("Socket disconnected");
+    }
   },
 }));

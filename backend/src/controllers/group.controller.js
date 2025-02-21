@@ -331,14 +331,16 @@ export const sendGroupMessage = async (req, res) => {
       .populate("senderId", "fullName profilePic");
 
     // Emit message to all group members
-    group.members.forEach((memberId) => {
-      if (memberId.toString() !== senderId.toString()) {
-        const memberSocketId = io.sockets.adapter.rooms.get(memberId.toString());
-        if (memberSocketId) {
-          io.to(memberSocketId).emit("newGroupMessage", populatedMessage);
-        }
-      }
-    });
+    // group.members.forEach((memberId) => {
+    //   if (memberId.toString() !== senderId.toString()) {
+    //     const memberSocketId = io.sockets.adapter.rooms.get(memberId.toString());
+    //     if (memberSocketId) {
+    //       io.to(memberSocketId).emit("newGroupMessage", populatedMessage);
+    //     }
+    //   }
+    // });
+    // Emit message to all group members using the group room
+    io.to(`group:${groupId}`).emit("newGroupMessage", populatedMessage);
 
     res.status(201).json(populatedMessage);
   } catch (error) {

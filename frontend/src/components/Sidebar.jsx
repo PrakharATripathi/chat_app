@@ -10,8 +10,8 @@ import { useAuthStore } from "../store/useAuthStore";
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState("chats");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
-  const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser } = useChatStore();
-  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup } = useGroupStore();
+  const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser,unreadMessages } = useChatStore();
+  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup,unreadGroupMessages } = useGroupStore();
   const { authUser, onlineUsers, logout } = useAuthStore();
 
   useEffect(() => {
@@ -29,6 +29,10 @@ const Sidebar = () => {
     setSelectedUser(null);
   };
 
+   // Calculate total unread messages for badge on tabs
+   const totalUnreadDirectMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
+   const totalUnreadGroupMessages = Object.values(unreadGroupMessages).reduce((sum, count) => sum + count, 0);
+
   return (
     <div className="w-full max-w-xs border-r border-base-300 flex flex-col">
       {/* Header */}
@@ -41,7 +45,7 @@ const Sidebar = () => {
               </div>
             </div>
             <div>
-              <h3 className="font-medium">{authUser?.name || "User"}</h3>
+              <h3 className="font-medium">{authUser?.fullName || "User"}</h3>
               <p className="text-sm text-gray-500">Online</p>
             </div>
           </div>
@@ -54,16 +58,26 @@ const Sidebar = () => {
       {/* Tabs */}
       <div className="tabs tabs-boxed bg-base-100 m-4">
         <button
-          className={`tab ${activeTab === "chats" ? "tab-active" : ""}`}
+          className={`tab ${activeTab === "chats" ? "tab-active" : ""}relative`}
           onClick={() => setActiveTab("chats")}
         >
           Chats
+          {totalUnreadDirectMessages > 0 && (
+            <span className="absolute -top-2 -right-2 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {totalUnreadDirectMessages}
+            </span>
+          )}
         </button>
         <button
-          className={`tab ${activeTab === "groups" ? "tab-active" : ""}`}
+          className={`tab ${activeTab === "groups" ? "tab-active" : ""}relative`}
           onClick={() => setActiveTab("groups")}
         >
           Groups
+          {totalUnreadGroupMessages > 0 && (
+            <span className="absolute -top-2 -right-2 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {totalUnreadGroupMessages}
+            </span>
+          )}
         </button>
       </div>
 
@@ -84,9 +98,14 @@ const Sidebar = () => {
                       selectedUser?._id === user._id ? "bg-base-200" : ""
                     }`}
                   >
-                    <div className="avatar online">
+                    <div className="avatar online relative">
                       <div className="w-10 h-10 rounded-full">
                         <img src={user.profilePic || "/avatar.png"} alt={user.fullName} />
+                        {unreadMessages[user._id] > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {unreadMessages[user._id]}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -123,9 +142,14 @@ const Sidebar = () => {
                       selectedGroup?._id === group._id ? "bg-base-200" : ""
                     }`}
                   >
-                    <div className="avatar">
+                    <div className="avatar relative">
                       <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-center">
                         <Users size={18}className="text-center mt-2 mx-3" />
+                        {unreadGroupMessages[group._id] > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {unreadGroupMessages[group._id]}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div>
