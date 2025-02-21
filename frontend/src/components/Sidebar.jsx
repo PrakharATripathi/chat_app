@@ -33,6 +33,10 @@ const Sidebar = () => {
    const totalUnreadDirectMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
    const totalUnreadGroupMessages = Object.values(unreadGroupMessages).reduce((sum, count) => sum + count, 0);
 
+   console.log(totalUnreadGroupMessages)
+   console.log(totalUnreadDirectMessages)
+
+
   return (
     <div className="w-full max-w-xs border-r border-base-300 flex flex-col">
       {/* Header */}
