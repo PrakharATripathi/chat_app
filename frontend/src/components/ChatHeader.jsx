@@ -16,7 +16,7 @@ const ChatHeader = ({ isGroupChat }) => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={isGroupChat ? selectedGroup?.profilePic || "/avatar.png"  : selectedUser?.profilePic || "/avatar.png"} alt="img" />
+              <img src={isGroupChat ? selectedGroup?.profilePic || "/avatar.png" : selectedUser?.profilePic || "/avatar.png"} alt="img" />
             </div>
           </div>
 

@@ -1,5 +1,5 @@
 import cloudinary from "../lib/cloudinary.js";
-import { getReceiverSocketId, io,} from "../lib/socket.js";
+import { getReceiverSocketId, io, } from "../lib/socket.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 
@@ -11,7 +11,7 @@ export const getUsersForSidebar = async (req, res) => {
 
     res.status(200).json(filteredUsers);
   } catch (error) {
-    console.error("Error in getUsersForSidebar: ", error.message);
+    console.error(`[message.controller.js: getUsersForSidebar] Error: ${error.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -30,7 +30,7 @@ export const getMessages = async (req, res) => {
 
     res.status(200).json(messages);
   } catch (error) {
-    console.log("Error in getMessages controller: ", error.message);
+    console.log(`[message.controller.js: getMessages] Error: ${error.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -65,7 +65,7 @@ export const sendMessage = async (req, res) => {
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("Error in sendMessage controller: ", error.message);
+    console.log(`[message.controller.js: sendMessage] Error: ${error.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };

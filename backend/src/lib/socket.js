@@ -20,7 +20,7 @@ export function getReceiverSocketId(userId) {
 const userSocketMap = {}; // {userId: socketId}
 
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
+  console.log(`A user connected in socket.js at line ${__line} in connection`);
 
   const userId = socket.handshake.query.userId;
   if (userId) {
@@ -29,14 +29,14 @@ io.on("connection", (socket) => {
     socket.join(userId);
   }
 
-   // Join all group rooms the user is part of
-   if (socket.handshake.query.groups) {
+  // Join all group rooms the user is part of
+  if (socket.handshake.query.groups) {
     try {
       const groups = JSON.parse(socket.handshake.query.groups);
       if (Array.isArray(groups)) {
         groups.forEach(groupId => {
           socket.join(`group:${groupId}`);
-          console.log(`User ${userId} joined group:${groupId} on connect`);
+          console.log(`User ${userId} joined group:${groupId} in socket.js at line ${__line} in joinGroup`);
         });
       }
     } catch (error) {
@@ -50,17 +50,17 @@ io.on("connection", (socket) => {
   // Handle joining a new group
   socket.on("joinGroup", (groupId) => {
     socket.join(`group:${groupId}`);
-    console.log(`User ${userId} joined group:${groupId}`);
+    console.log(`User ${userId} joined group:${groupId} in socket.js at line ${__line} in joinGroup`);
   });
 
-   // Handle leaving a group
-   socket.on("leaveGroup", (groupId) => {
+  // Handle leaving a group
+  socket.on("leaveGroup", (groupId) => {
     socket.leave(`group:${groupId}`);
-    console.log(`User ${userId} left group:${groupId}`);
+    console.log(`User ${userId} left group:${groupId} in socket.js at line ${__line} in leaveGroup`);
   });
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
+    console.log(`A user disconnected in socket.js at line ${__line} in disconnect`);
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });

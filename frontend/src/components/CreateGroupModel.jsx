@@ -8,14 +8,14 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
   const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const { authUser } = useAuthStore();
   const { users } = useChatStore();
   const { createGroup, isCreatingGroup } = useGroupStore();
 
   // Filter users based on search query
   const filteredUsers = users.filter(user => user.fullName.toLowerCase().includes(searchQuery.toLowerCase()));
-  
+
   const handleUserSelect = (userId) => {
     if (selectedUsers.includes(userId)) {
       setSelectedUsers(selectedUsers.filter(id => id !== userId));
@@ -26,12 +26,12 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
 
   const handleCreateGroup = async () => {
     if (groupName.trim() === "" || selectedUsers.length === 0) return;
-    
+
     await createGroup({
       name: groupName,
       members: [...selectedUsers, authUser?._id]
     });
-    
+
     // Reset form and close modal upon successful creation
     setGroupName("");
     setSelectedUsers([]);
@@ -55,15 +55,15 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-base-100 rounded-lg w-full max-w-md p-6 relative">
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 btn btn-ghost btn-sm btn-circle"
         >
           <X size={20} />
         </button>
-        
+
         <h2 className="text-xl font-bold mb-6">Create New Group</h2>
-        
+
         <div className="space-y-4">
           {/* Group Name Input */}
           <div className="form-control">
@@ -78,7 +78,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
               onChange={(e) => setGroupName(e.target.value)}
             />
           </div>
-          
+
           {/* Search Users */}
           <div className="form-control">
             <label className="label">
@@ -92,17 +92,16 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           {/* User Selection List */}
           <div className="max-h-60 overflow-y-auto border border-base-300 rounded-lg">
             {filteredUsers.length > 0 ? (
               <ul className="divide-y divide-base-300">
                 {filteredUsers.map(user => (
-                  <li 
+                  <li
                     key={user._id}
-                    className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-base-200 ${
-                      selectedUsers.includes(user._id) ? "bg-base-200" : ""
-                    }`}
+                    className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-base-200 ${selectedUsers.includes(user._id) ? "bg-base-200" : ""
+                      }`}
                     onClick={() => handleUserSelect(user._id)}
                   >
                     <div className="flex-shrink-0">
@@ -110,7 +109,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
                         type="checkbox"
                         className="checkbox"
                         checked={selectedUsers.includes(user._id)}
-                        onChange={() => {}}
+                        onChange={() => { }}
                       />
                     </div>
                     <div className="avatar">
@@ -130,12 +129,12 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
               </div>
             )}
           </div>
-          
+
           {/* Selected Count */}
           <div className="text-sm text-gray-500">
             {selectedUsers.length} users selected
           </div>
-          
+
           {/* Create Button */}
           <button
             className="btn btn-primary w-full"
