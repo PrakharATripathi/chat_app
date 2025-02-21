@@ -124,8 +124,8 @@ const Sidebar = () => {
                     }`}
                   >
                     <div className="avatar">
-                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
-                        <Users size={18} />
+                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-center">
+                        <Users size={18}className="text-center mt-2 mx-3" />
                       </div>
                     </div>
                     <div>

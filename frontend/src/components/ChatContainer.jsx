@@ -92,10 +92,9 @@ const ChatContainer = ({ isGroupChat = false }) => {
               <div className="size-10 rounded-full border">
                 <img
                   src={
-                    message.senderId === authUser._id
-                      ? isGroupChat ?
-                        (selectedGroup.members?.find(member => member._id === message.senderId)?.profilePic || "/avatar.png")
-                        : selectedUser.profilePic || "/avatar.png" :  authUser.profilePic || "/avatar.png"
+                   isGroupChat ? 
+                   (selectedGroup.members?.find(member => member._id === message.senderId._id)?.profilePic || "/avatar.png"):
+                   selectedUser.profilePic || "/avatar.png" 
                   }
                   alt="profile pic"
                 />
