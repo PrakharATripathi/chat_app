@@ -10,8 +10,8 @@ import { useAuthStore } from "../store/useAuthStore";
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState("chats");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
-  const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser, unreadMessages } = useChatStore();
-  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages } = useGroupStore();
+  const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser,unreadMessages } = useChatStore();
+  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup,unreadGroupMessages } = useGroupStore();
   const { authUser, onlineUsers, logout } = useAuthStore();
 
   useEffect(() => {
@@ -29,9 +29,9 @@ const Sidebar = () => {
     setSelectedUser(null);
   };
 
-  // Calculate total unread messages for badge on tabs
-  const totalUnreadDirectMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
-  const totalUnreadGroupMessages = Object.values(unreadGroupMessages).reduce((sum, count) => sum + count, 0);
+   // Calculate total unread messages for badge on tabs
+   const totalUnreadDirectMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
+   const totalUnreadGroupMessages = Object.values(unreadGroupMessages).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="w-full max-w-xs border-r border-base-300 flex flex-col">
@@ -94,8 +94,9 @@ const Sidebar = () => {
                   <li
                     key={user._id}
                     onClick={() => handleUserSelect(user)}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-base-200 ${selectedUser?._id === user._id ? "bg-base-200" : ""
-                      }`}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-base-200 ${
+                      selectedUser?._id === user._id ? "bg-base-200" : ""
+                    }`}
                   >
                     <div className="avatar online relative">
                       <div className="w-10 h-10 rounded-full">
@@ -137,12 +138,13 @@ const Sidebar = () => {
                   <li
                     key={group._id}
                     onClick={() => handleGroupSelect(group)}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-base-200 ${selectedGroup?._id === group._id ? "bg-base-200" : ""
-                      }`}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-base-200 ${
+                      selectedGroup?._id === group._id ? "bg-base-200" : ""
+                    }`}
                   >
                     <div className="avatar relative">
                       <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-center">
-                        <Users size={18} className="text-center mt-2 mx-3" />
+                        <Users size={18}className="text-center mt-2 mx-3" />
                         {unreadGroupMessages[group._id] > 0 && (
                           <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                             {unreadGroupMessages[group._id]}
@@ -164,7 +166,7 @@ const Sidebar = () => {
 
       {/* Create Group Modal */}
       {isCreateGroupOpen && (
-        <CreateGroupModal
+        <CreateGroupModal 
           isOpen={isCreateGroupOpen}
           onClose={() => setIsCreateGroupOpen(false)}
         />

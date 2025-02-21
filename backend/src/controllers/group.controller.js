@@ -122,7 +122,7 @@ export const addMembers = async (req, res) => {
 
     // Add new members
     const updatedMembers = [...new Set([...group.members.map(m => m.toString()), ...members])];
-
+    
     group.members = updatedMembers;
     await group.save();
 

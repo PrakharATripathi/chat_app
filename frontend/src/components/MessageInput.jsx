@@ -4,13 +4,13 @@ import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useGroupStore } from "../store/useGroupStore";
 
-const MessageInput = ({ isGroupChat }) => {
+const MessageInput = ({isGroupChat}) => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
-  const { sendGroupMessage } = useGroupStore();
+  const {sendGroupMessage} = useGroupStore();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -37,12 +37,12 @@ const MessageInput = ({ isGroupChat }) => {
 
     try {
       setIsSubmitting(true);
-      if (isGroupChat) {
+      if(isGroupChat){
         await sendGroupMessage({
           text: text.trim(),
           image: imagePreview,
         })
-      } else {
+      }else{
         await sendMessage({
           text: text.trim(),
           image: imagePreview,
@@ -54,7 +54,7 @@ const MessageInput = ({ isGroupChat }) => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
-    } finally {
+    }finally{
       setIsSubmitting(false);
     }
   };

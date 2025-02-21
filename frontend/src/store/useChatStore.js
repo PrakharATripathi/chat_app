@@ -27,14 +27,13 @@ export const useChatStore = create((set, get) => ({
     set({ isMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
-      set({
-        messages: res?.data,
-        // Clear unread messages when opening a chat
-        unreadMessages: {
+      set({ messages: res?.data,
+         // Clear unread messages when opening a chat
+         unreadMessages: {
           ...get().unreadMessages,
           [userId]: 0
         }
-      });
+       });
     } catch (error) {
       console.log(error)
       toast.error(error.response.data.message);
@@ -69,36 +68,36 @@ export const useChatStore = create((set, get) => ({
     });
   },
 
-  // Listen for any new messages to track unread counts
-  subscribeToUnreadMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    const authUser = useAuthStore.getState().authUser;
-    const { selectedUser } = get();
-
-    socket.on("newMessage", (newMessage) => {
-      // Only count messages sent to the current user (receiver) and not from the currently selected chat
-      if (newMessage.receiverId === authUser._id &&
-        (!selectedUser || newMessage.senderId !== selectedUser._id)) {
-        set(state => {
-          const currentCount = state.unreadMessages[newMessage.senderId] || 0;
-          return {
-            unreadMessages: {
-              ...state.unreadMessages,
-              [newMessage.senderId]: currentCount + 1
-            }
-          };
-        });
-      }
-    });
-  },
+    // Listen for any new messages to track unread counts
+    subscribeToUnreadMessages: () => {
+      const socket = useAuthStore.getState().socket;
+      const authUser = useAuthStore.getState().authUser;
+      const { selectedUser } = get();
+      
+      socket.on("newMessage", (newMessage) => {
+        // Only count messages sent to the current user (receiver) and not from the currently selected chat
+        if (newMessage.receiverId === authUser._id && 
+            (!selectedUser || newMessage.senderId !== selectedUser._id)) {
+          set(state => {
+            const currentCount = state.unreadMessages[newMessage.senderId] || 0;
+            return {
+              unreadMessages: {
+                ...state.unreadMessages,
+                [newMessage.senderId]: currentCount + 1
+              }
+            };
+          });
+        }
+      });
+    },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
   },
 
-  setSelectedUser: (selectedUser) => {
-    set(state => {
+  setSelectedUser: (selectedUser) =>{
+    set(state =>{
       if (selectedUser) {
         // Clear unread messages when selecting a user
         return {
