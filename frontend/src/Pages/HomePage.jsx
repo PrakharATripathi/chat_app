@@ -16,8 +16,12 @@ const HomePage = () => {
       <div className="flex items-center justify-center pt-20 px-4">
         <div className="bg-base-100 rounded-lg shadow-cl w-full max-w-6xl h-[calc(100vh-8rem)]">
           <div className="flex h-full rounded-lg overflow-hidden">
+            <div className={`${(selectedUser || selectedGroup) ? 'hidden md:flex' : 'flex'} w-full md:w-72 lg:w-80 `}>
             <Sidebar />
+            </div>
+            <div className={`${(selectedUser || selectedGroup) ? 'flex' : 'hidden md:flex'} flex-1 h-full`}>
             {(selectedUser || selectedGroup) ?  <ChatContainer isGroupChat={isGroupChat} /> : <NoChatSelected />}
+            </div>
           </div>
         </div>
       </div>

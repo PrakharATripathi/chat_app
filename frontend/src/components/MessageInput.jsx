@@ -110,10 +110,14 @@ const MessageInput = ({isGroupChat}) => {
         </div>
         <button
           type="submit"
-          className="btn btn-sm btn-circle"
+          className={`flex items-center justify-center w-10 h-10 rounded-full
+            ${(!text.trim() && !imagePreview) || isSubmitting
+              ? "bg-base-200 text-base-content/50"
+              : "bg-primary text-primary-foreground"
+            } transition-colors`}
           disabled={!text.trim() && !imagePreview || isSubmitting}
         >
-          <Send size={22} />
+          <Send className="w-5 h-5" />
         </button>
       </form>
     </div>

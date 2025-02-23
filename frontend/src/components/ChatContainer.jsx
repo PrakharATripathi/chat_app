@@ -132,7 +132,11 @@ const ChatContainer = ({ isGroupChat = false }) => {
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>
-            <div className="chat-bubble flex flex-col">
+            <div className={`chat-bubble flex flex-col ${
+              (isGroupChat ? message.senderId._id === authUser._id : message.senderId === authUser._id)
+                ? "bg-primary text-primary-foreground"
+                : "bg-base-200"
+            }`}>
               {message.image && (
                 <img
                   src={message.image}
