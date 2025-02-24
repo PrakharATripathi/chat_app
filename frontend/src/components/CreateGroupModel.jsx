@@ -9,7 +9,6 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
   const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [groupImage, setGroupImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   
   const { authUser } = useAuthStore();
@@ -40,7 +39,6 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
         return;
       }
 
-      setGroupImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -50,7 +48,6 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
   };
   
   const handleRemoveImage = () => {
-    setGroupImage(null);
     setImagePreview(null);
   };
 
@@ -66,7 +63,6 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
     // Reset form and close modal upon successful creation
     setGroupName("");
     setSelectedUsers([]);
-    setGroupImage(null);
     setImagePreview(null);
     onClose();
   };
