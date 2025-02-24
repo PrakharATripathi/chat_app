@@ -40,8 +40,8 @@ const Sidebar = () => {
             <button
               onClick={() => setActiveTab("chats")}
               className={`relative flex items-center justify-center py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200
-                ${activeTab === "chats" 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
+                ${activeTab === "chats"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "hover:bg-base-300 text-base-content"
                 }`}
             >
@@ -55,8 +55,8 @@ const Sidebar = () => {
             <button
               onClick={() => setActiveTab("groups")}
               className={`relative flex items-center justify-center py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200
-                ${activeTab === "groups" 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
+                ${activeTab === "groups"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "hover:bg-base-300 text-base-content"
                 }`}
             >
@@ -103,15 +103,15 @@ const Sidebar = () => {
                     key={user._id}
                     onClick={() => handleUserSelect(user)}
                     className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200
-                      ${selectedUser?._id === user._id 
-                        ? "bg-base-200 shadow-sm" 
+                      ${selectedUser?._id === user._id
+                        ? "bg-base-200 shadow-sm"
                         : "hover:bg-base-200/70"
                       }`}
                   >
                     <div className="relative flex-shrink-0">
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-base-300">
-                        <img 
-                          src={user.profilePic || "/avatar.png"} 
+                        <img
+                          src={user.profilePic || "/avatar.png"}
                           alt={user.fullName}
                           className="w-full h-full object-cover"
                         />
@@ -147,14 +147,25 @@ const Sidebar = () => {
                     key={group._id}
                     onClick={() => handleGroupSelect(group)}
                     className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200
-                      ${selectedGroup?._id === group._id 
-                        ? "bg-base-200 shadow-sm" 
+                      ${selectedGroup?._id === group._id
+                        ? "bg-base-200 shadow-sm"
                         : "hover:bg-base-200/70"
                       }`}
                   >
                     <div className="relative flex-shrink-0">
                       <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                        <Users size={20} />
+                        {/* <Users size={20} /> */}
+                        {
+                          group.groupPic ? (
+                            <img
+                              src={group.groupPic}
+                              alt={group.name}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <Users size={20} />
+                          )
+                        }
                       </div>
                       {unreadGroupMessages[group._id] > 0 && (
                         <span className="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center px-1 bg-error text-white text-xs font-bold rounded-full">
@@ -177,7 +188,7 @@ const Sidebar = () => {
       </div>
 
       {isCreateGroupOpen && (
-        <CreateGroupModal 
+        <CreateGroupModal
           isOpen={isCreateGroupOpen}
           onClose={() => setIsCreateGroupOpen(false)}
         />
