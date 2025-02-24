@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { PenSquare, Plus, Users } from "lucide-react";
+import { Edit, MoreVertical, PenSquare, Plus, Trash2, Users } from "lucide-react";
 import CreateGroupModal from "./CreateGroupModel";
 import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
@@ -8,9 +8,12 @@ import { useAuthStore } from "../store/useAuthStore";
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState("chats");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [groupToEdit, setGroupToEdit] = useState(null);
+  const [actionMenuGroup, setActionMenuGroup] = useState(null);
+
   const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser, unreadMessages } = useChatStore();
-  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages } = useGroupStore();
-  const { onlineUsers } = useAuthStore();
+  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages, deleteGroup } = useGroupStore();
+  const { onlineUsers, authUser } = useAuthStore();
 
   useEffect(() => {
     getUsers();
@@ -22,9 +25,40 @@ const Sidebar = () => {
     setSelectedGroup(null);
   };
 
-  const handleGroupSelect = (group) => {
+  // const handleGroupSelect = (group) => {
+  //   setSelectedGroup(group);
+  //   setSelectedUser(null);
+  // };
+  const handleGroupSelect = (group, e) => {
+    // Prevent group selection when clicking the action menu
+    if (e.target.closest('.group-actions')) {
+      e.stopPropagation();
+      return;
+    }
     setSelectedGroup(group);
     setSelectedUser(null);
+  };
+
+  const handleGroupAction = (action, group) => {
+    switch (action) {
+      case 'edit':
+        setGroupToEdit(group);
+        setIsCreateGroupOpen(true);
+        break;
+      case 'delete':
+        if (window.confirm('Are you sure you want to delete this group?')) {
+          deleteGroup(group._id);
+        }
+        break;
+      default:
+        break;
+    }
+    setActionMenuGroup(null);
+  };
+
+  // Only show group actions if user is group admin or member
+  const canManageGroup = (group) => {
+    return group?.admin?._id === authUser?._id;
   };
 
   const totalUnreadDirectMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
@@ -40,8 +74,8 @@ const Sidebar = () => {
             <button
               onClick={() => setActiveTab("chats")}
               className={`relative flex items-center justify-center py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200
-                ${activeTab === "chats" 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
+                ${activeTab === "chats"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "hover:bg-base-300 text-base-content"
                 }`}
             >
@@ -55,8 +89,8 @@ const Sidebar = () => {
             <button
               onClick={() => setActiveTab("groups")}
               className={`relative flex items-center justify-center py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200
-                ${activeTab === "groups" 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
+                ${activeTab === "groups"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "hover:bg-base-300 text-base-content"
                 }`}
             >
@@ -103,15 +137,15 @@ const Sidebar = () => {
                     key={user._id}
                     onClick={() => handleUserSelect(user)}
                     className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200
-                      ${selectedUser?._id === user._id 
-                        ? "bg-base-200 shadow-sm" 
+                      ${selectedUser?._id === user._id
+                        ? "bg-base-200 shadow-sm"
                         : "hover:bg-base-200/70"
                       }`}
                   >
                     <div className="relative flex-shrink-0">
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-base-300">
-                        <img 
-                          src={user.profilePic || "/avatar.png"} 
+                        <img
+                          src={user.profilePic || "/avatar.png"}
                           alt={user.fullName}
                           className="w-full h-full object-cover"
                         />
@@ -145,10 +179,10 @@ const Sidebar = () => {
                 {groups.map((group) => (
                   <li
                     key={group._id}
-                    onClick={() => handleGroupSelect(group)}
-                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200
-                      ${selectedGroup?._id === group._id 
-                        ? "bg-base-200 shadow-sm" 
+                    onClick={(e) => handleGroupSelect(group, e)}
+                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200 relative
+                          ${selectedGroup?._id === group._id
+                        ? "bg-base-200 shadow-sm"
                         : "hover:bg-base-200/70"
                       }`}
                   >
@@ -168,6 +202,41 @@ const Sidebar = () => {
                         {group.members.length} members
                       </p>
                     </div>
+
+                    {canManageGroup(group) && (
+                      <div className="group-actions relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActionMenuGroup(actionMenuGroup === group._id ? null : group._id);
+                          }}
+                          className="btn btn-ghost btn-sm btn-circle"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+
+                        {actionMenuGroup === group._id && (
+                          <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-base-100 ring-1 ring-black ring-opacity-5 z-50">
+                            <div className="py-1">
+                              <button
+                                onClick={() => handleGroupAction('edit', group)}
+                                className="flex items-center w-full px-4 py-2 text-sm hover:bg-base-200 gap-2"
+                              >
+                                <Edit size={16} />
+                                Edit Group
+                              </button>
+                              <button
+                                onClick={() => handleGroupAction('delete', group)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-error hover:bg-base-200 gap-2"
+                              >
+                                <Trash2 size={16} />
+                                Delete Group
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -177,9 +246,13 @@ const Sidebar = () => {
       </div>
 
       {isCreateGroupOpen && (
-        <CreateGroupModal 
+        <CreateGroupModal
           isOpen={isCreateGroupOpen}
-          onClose={() => setIsCreateGroupOpen(false)}
+          onClose={() => {
+            setIsCreateGroupOpen(false);
+            setGroupToEdit(null);
+          }}
+          groupToEdit={groupToEdit}
         />
       )}
     </aside>
