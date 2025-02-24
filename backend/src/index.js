@@ -9,7 +9,7 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.routes.js"
 import messageRoutes from "./routes/message.routes.js";
 import groupsRoutes from "./routes/group.routes.js"
-import { port } from "./constant/constant.js";
+import { Frontend_URI, port } from "./constant/constant.js";
 import { app, server } from "./lib/socket.js";
 // import { app, server } from "./lib/socket.js";
 
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5174",
+    origin:Frontend_URI,
     credentials: true,
   })
 );
