@@ -51,14 +51,12 @@ const ChatContainer = ({ isGroupChat = false }) => {
   // Separate effect for handling group messages
   useEffect(() => {
     if (isGroupChat && selectedGroup?._id) {
-      console.log("Loading and subscribing to group:", selectedGroup._id);
       getGroupMessages(selectedGroup._id);      
       // Make sure to join the group room
       joinGroupRoom(selectedGroup._id);  
       // Set up subscription for real-time updates
       subscribeToGroupMessages();  
       return () => {
-        console.log("Unsubscribing from group:", selectedGroup._id);
         unsubscribeFromGroupMessages();
       };
     }
