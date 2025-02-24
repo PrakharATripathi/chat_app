@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import { Frontend_URI } from "../constant/constant";
+import { Frontend_URI } from "../constant/constant.js";
 
 const app = express();
 const server = http.createServer(app);
