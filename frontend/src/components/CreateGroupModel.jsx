@@ -4,24 +4,15 @@ import { useGroupStore } from "../store/useGroupStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
-const CreateGroupModal = ({ isOpen, onClose,groupToEdit=null }) => {
+const CreateGroupModal = ({ isOpen, onClose }) => {
   const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   
   const { authUser } = useAuthStore();
   const { users } = useChatStore();
-  const { createGroup, isCreatingGroup,updateGroup,isUpdatingGroup } = useGroupStore();
+  const { createGroup, isCreatingGroup } = useGroupStore();
 
-
-   // Initialize form when editing
-   useEffect(() => {
-    if (groupToEdit) {
-      setGroupName(groupToEdit.name);
-      setSelectedUsers(groupToEdit.members.filter(id => id !== authUser?._id));
-    }
-  }, [groupToEdit, authUser]);
-  
   // Filter users based on search query
   const filteredUsers = users.filter(user => user.fullName.toLowerCase().includes(searchQuery.toLowerCase()));
   
@@ -36,23 +27,11 @@ const CreateGroupModal = ({ isOpen, onClose,groupToEdit=null }) => {
   const handleCreateGroup = async () => {
     if (groupName.trim() === "" || selectedUsers.length === 0) return;
     
-    const memberIds = [...selectedUsers, authUser?._id];
-
-    // await createGroup({
-    //   name: groupName,
-    //   members: [...selectedUsers, authUser?._id]
-    // });
-    if (groupToEdit) {
-      await updateGroup(groupToEdit._id, {
-        name: groupName,
-        members: memberIds
-      });
-    } else {
-      await createGroup({
-        name: groupName,
-        members: memberIds
-      });
-    }
+    await createGroup({
+      name: groupName,
+      members: [...selectedUsers, authUser?._id]
+    });
+    
     // Reset form and close modal upon successful creation
     setGroupName("");
     setSelectedUsers([]);
@@ -83,7 +62,7 @@ const CreateGroupModal = ({ isOpen, onClose,groupToEdit=null }) => {
           <X size={20} />
         </button>
         
-        <h2 className="text-xl font-bold mb-6">{groupToEdit ? "Edit Group" : "Create New Group"}</h2>
+        <h2 className="text-xl font-bold mb-6">Create New Group</h2>
         
         <div className="space-y-4">
           {/* Group Name Input */}
@@ -103,7 +82,7 @@ const CreateGroupModal = ({ isOpen, onClose,groupToEdit=null }) => {
           {/* Search Users */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text">{groupToEdit ? "Manage Members" : "Add Members"}</span>
+              <span className="label-text">Add Members</span>
             </label>
             <input
               type="text"
@@ -163,14 +142,10 @@ const CreateGroupModal = ({ isOpen, onClose,groupToEdit=null }) => {
             onClick={handleCreateGroup}
             disabled={groupName.trim() === "" || selectedUsers.length === 0 || isCreatingGroup}
           >
-            {isCreatingGroup || isUpdatingGroup ? (
+            {isCreatingGroup ? (
               <span className="loading loading-spinner"></span>
             ) : (
-              groupToEdit ? (
-                "Update Group"
-              ) : (
-                "Create Group"
-              )
+              "Create Group"
             )}
           </button>
         </div>
