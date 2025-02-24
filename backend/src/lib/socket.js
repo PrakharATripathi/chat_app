@@ -8,7 +8,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "Frontend_URI",
+    origin: Frontend_URI,
     methods: ["GET", "POST"],
   },
 });
