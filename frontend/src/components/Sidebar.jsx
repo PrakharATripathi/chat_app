@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
-import { PenSquare, Plus, Users } from "lucide-react";
+import { Cog, EllipsisVertical, PenSquare, Plus, Trash2, Users } from "lucide-react";
 import CreateGroupModal from "./CreateGroupModel";
 import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuthStore } from "../store/useAuthStore";
+import Model from "./Model";
 
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState("chats");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser, unreadMessages } = useChatStore();
-  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages } = useGroupStore();
-  const { onlineUsers } = useAuthStore();
+  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages,deleteGroup } = useGroupStore();
+  const { onlineUsers,authUser } = useAuthStore();
+  const [selectedGroupData, setSelectedGroupData] = useState(null);
 
   useEffect(() => {
     getUsers();
@@ -30,6 +32,14 @@ const Sidebar = () => {
   const totalUnreadDirectMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
   const totalUnreadGroupMessages = Object.values(unreadGroupMessages).reduce((sum, count) => sum + count, 0);
 
+  const deleteGroupModal = (groupData) => {
+    setSelectedGroupData(groupData);
+    document.getElementById('my_modal_3').showModal();
+  };
+  const deleteGroupfn = async(groupId) => {
+    await deleteGroup(groupId);
+    document.getElementById('my_modal_3').close();
+  };
   return (
     <aside className="flex flex-col h-full bg-base-100 border-r border-base-300 w-full md:w-72 lg:w-80">
       {/* Fixed Top Section with Shadow */}
@@ -154,7 +164,6 @@ const Sidebar = () => {
                   >
                     <div className="relative flex-shrink-0">
                       <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                        {/* <Users size={20} /> */}
                         {
                           group.groupPic ? (
                             <img
@@ -179,6 +188,18 @@ const Sidebar = () => {
                         {group.members.length} members
                       </p>
                     </div>
+                    {
+                      group.admin._id === authUser._id && 
+                      <div className={`dropdown dropdown-bottom dropdown-end`}>
+                      <div tabIndex={0} role="button" className=" m-1"><EllipsisVertical /></div>
+                      <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                        <li onClick={()=>{
+                          console.log("update")
+                        }}><a><Cog /> Update Group</a></li>
+                        <li className="text-red-500" onClick={() => deleteGroupModal(group)}><a> <Trash2 /> Delete Group</a></li>
+                      </ul>
+                    </div>
+                    }
                   </li>
                 ))}
               </ul>
@@ -190,9 +211,13 @@ const Sidebar = () => {
       {isCreateGroupOpen && (
         <CreateGroupModal
           isOpen={isCreateGroupOpen}
-          onClose={() => setIsCreateGroupOpen(false)}
+          onClose={() => {
+            setIsCreateGroupOpen(false);
+            setSelectedGroupData(null);
+          }}
         />
       )}
+     <Model fn={deleteGroupfn} selectedGroupData={selectedGroupData}/>
     </aside>
   );
 };
