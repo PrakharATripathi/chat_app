@@ -5,13 +5,14 @@ import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuthStore } from "../store/useAuthStore";
 import Model from "./Model";
+import SettingModel from "./SettingModel";
 
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState("chats");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const { users, getUsers, isUsersLoading, selectedUser, setSelectedUser, unreadMessages } = useChatStore();
-  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages,deleteGroup } = useGroupStore();
-  const { onlineUsers,authUser } = useAuthStore();
+  const { groups, getUserGroups, isGroupsLoading, selectedGroup, setSelectedGroup, unreadGroupMessages, deleteGroup } = useGroupStore();
+  const { onlineUsers, authUser } = useAuthStore();
   const [selectedGroupData, setSelectedGroupData] = useState(null);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ const Sidebar = () => {
     setSelectedGroupData(groupData);
     document.getElementById('my_modal_3').showModal();
   };
-  const deleteGroupfn = async(groupId) => {
+  const deleteGroupfn = async (groupId) => {
     await deleteGroup(groupId);
     document.getElementById('my_modal_3').close();
   };
@@ -189,16 +190,17 @@ const Sidebar = () => {
                       </p>
                     </div>
                     {
-                      group.admin._id === authUser._id && 
+                      group.admin._id === authUser._id &&
                       <div className={`dropdown dropdown-bottom dropdown-end`}>
-                      <div tabIndex={0} role="button" className=" m-1"><EllipsisVertical /></div>
-                      <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                        <li onClick={()=>{
-                          console.log("update")
-                        }}><a><Cog /> Update Group</a></li>
-                        <li className="text-red-500" onClick={() => deleteGroupModal(group)}><a> <Trash2 /> Delete Group</a></li>
-                      </ul>
-                    </div>
+                        <div tabIndex={0} role="button" className=" m-1"><EllipsisVertical /></div>
+                        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                          <li onClick={() => {
+                            document.getElementById('my_modal_4').showModal()
+                            setSelectedGroupData(group)
+                          }}><a><Cog /> Update Group</a></li>
+                          <li className="text-red-500" onClick={() => deleteGroupModal(group)}><a> <Trash2 /> Delete Group</a></li>
+                        </ul>
+                      </div>
                     }
                   </li>
                 ))}
@@ -217,7 +219,8 @@ const Sidebar = () => {
           }}
         />
       )}
-     <Model fn={deleteGroupfn} selectedGroupData={selectedGroupData}/>
+      <Model fn={deleteGroupfn} selectedGroupData={selectedGroupData} />
+      <SettingModel groupData={selectedGroupData} setSelectedGroupData={setSelectedGroupData} />
     </aside>
   );
 };
