@@ -125,7 +125,6 @@ const SettingModel = ({ groupData,setSelectedGroupData }) => {
             
             setIsEditMode(false);
             setMembersToRemove([]);
-            toast.success("Group updated successfully");
         } catch (error) {
             toast.error("Failed to update group");
             console.error(error);
@@ -153,7 +152,7 @@ const SettingModel = ({ groupData,setSelectedGroupData }) => {
             <dialog id="my_modal_4" className="modal">
                 <div className="bg-base-100 rounded-lg max-h-[90vh] overflow-auto modal-box w-11/12 max-w-5xl">
                     {/* Header */}
-                    <div className="p-4 border-b border-base-300 sticky top-0 bg-base-100 z-10 flex items-center justify-between">
+                    <div className=" border-b border-base-300 top-0 bg-base-100 z-10 flex items-center justify-between">
                         <h2 className="text-xl font-bold flex items-center gap-2">
                             {groupData?.name} Details
                             {!isEditMode && (
@@ -166,7 +165,7 @@ const SettingModel = ({ groupData,setSelectedGroupData }) => {
                                 </button>
                             )}
                         </h2>
-                        <div className="modal-action flex items-center gap-2 m-0">
+                        <div className="modal-action flex items-center gap-2 mb-4">
                             {isEditMode && (
                                 <>
                                     <button 
@@ -193,7 +192,7 @@ const SettingModel = ({ groupData,setSelectedGroupData }) => {
                                 </>
                             )}
                             <form method="dialog">
-                                <button className="btn btn-sm btn-ghost btn-circle" onClick={()=>setSelectedGroupData(null)}>
+                                <button className="btn btn-sm btn-ghost btn-circle " onClick={()=>setSelectedGroupData(null)}>
                                     <X size={20}/>
                                 </button>
                             </form>

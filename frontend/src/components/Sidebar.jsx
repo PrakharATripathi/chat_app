@@ -191,8 +191,9 @@ const Sidebar = () => {
                     </div>
                     {
                       group.admin._id === authUser._id &&
-                      <div className={`dropdown dropdown-bottom dropdown-end`}>
-                        <div tabIndex={0} role="button" className=" m-1"><EllipsisVertical /></div>
+                      <div className={`dropdown dropdown-bottom dropdown-end`}
+                      onClick={(e) => e.stopPropagation()}>
+                        <div tabIndex={0} role="button" className=" m-1 block"><EllipsisVertical /></div>
                         <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
                           <li onClick={() => {
                             document.getElementById('my_modal_4').showModal()
