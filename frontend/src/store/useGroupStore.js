@@ -181,27 +181,22 @@ export const useGroupStore = create(
           isOptimistic: true, // Flag to identify optimistic messages
         };
 
-        // Add optimistic message to state
-        set(state => ({
-          groupMessages: [...state.groupMessages, optimisticMessage]
-        }));
+        // Update UI immediately with optimistic message
+        set({ groupMessages: [...groupMessages, optimisticMessage] });
         try {
           const res = await axiosInstance.post(`/groups/${selectedGroup._id}/messages`, messageData);
           // set({ groupMessages: [...groupMessages, res.data] });
-          // Replace optimistic message with server response
-          set(state => ({
-            groupMessages: state.groupMessages.map(msg =>
-              msg._id === optimisticId ? { ...res.data } : msg
-            )
-          }));
+          set({
+            groupMessages: groupMessages
+              .filter(msg => msg._id !== optimisticId)
+              .concat(res.data)
+          });
           return res.data;
         } catch (error) {
-          // Mark message as failed instead of removing it
-          set(state => ({
-            groupMessages: state.groupMessages.map(msg =>
-              msg._id === optimisticId ? { ...msg, failed: true, isOptimistic: false } : msg
-            )
-          }));
+          // Remove optimistic message on error
+          set({
+            groupMessages: groupMessages.filter(msg => msg._id !== optimisticId)
+          });
           toast.error(error.response?.data?.message || "Failed to send message");
           throw error;
         }
