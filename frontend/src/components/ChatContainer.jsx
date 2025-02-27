@@ -97,7 +97,6 @@ const ChatContainer = ({ isGroupChat = false }) => {
   };
 
   const getSenderProfilePic = (message) => {
-    console.log(message)
     if (isGroupChat) {
       const senderId = typeof message.senderId === 'object' ? message.senderId._id : message.senderId;
       const member = selectedGroup.members?.find(m => m._id === senderId);

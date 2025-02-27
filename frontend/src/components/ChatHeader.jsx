@@ -26,8 +26,11 @@ const ChatHeader = ({ isGroupChat }) => {
             {
               isGroupChat ? (
                 <span className="text-gray-500 text-xs">
-                  {selectedGroup.members.map(member => member.fullName).join(', ')}
-                </span>
+                {selectedGroup.members.length > 7
+                  ? `${selectedGroup.members.slice(0, 4).map(member => member.fullName).join(', ')}...`
+                  : selectedGroup.members.map(member => member.fullName).join(', ')
+                }
+              </span>
               ) : (
                 <p className="text-sm text-base-content/70">
                   {onlineUsers?.includes(selectedUser?._id) ? "Online" : "Offline"}
