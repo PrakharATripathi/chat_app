@@ -198,7 +198,7 @@ const Sidebar = () => {
                           <li onClick={() => {
                             document.getElementById('my_modal_4').showModal()
                             setSelectedGroupData(group)
-                          }}><a><Cog /> Update Group</a></li>
+                          }}><a><Cog />Group Setting</a></li>
                           <li className="text-red-500" onClick={() => deleteGroupModal(group)}><a> <Trash2 /> Delete Group</a></li>
                         </ul>
                       </div>

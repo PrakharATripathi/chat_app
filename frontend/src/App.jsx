@@ -15,15 +15,35 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
 import SettingsPage from "./Pages/SettingPage";
 import HomePage from "./Pages/HomePage";
+import { useChatStore } from "./store/useChatStore";
+import { useGroupStore } from "./store/useGroupStore";
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth, onlineUsers,socket } = useAuthStore();
   const { theme } = useThemeStore();
+  const { subscribeToUnreadMessages } = useChatStore();
+  const { subscribeToUnreadGroupMessages } = useGroupStore();
 
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+
+    // Ensure socket connection when component mounts
+    if (authUser && !socket) {
+      connectSocket();
+    }
+    
+    // Setup unread message tracking
+    if (authUser) {
+      // Small delay to ensure socket is connected
+      const timeoutId = setTimeout(() => {
+        subscribeToUnreadMessages();
+        subscribeToUnreadGroupMessages();
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [checkAuth,socket]);
 
 
   if (isCheckingAuth && !authUser)

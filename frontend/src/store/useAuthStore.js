@@ -19,7 +19,6 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
-
       set({ authUser: res.data });
       get().connectSocket();
     } catch (error) {
@@ -52,7 +51,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Logged in successfully");
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
     } finally {
       set({ isLoggingIn: false });
     }
@@ -85,88 +84,111 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  connectSocket: async() => {
+  connectSocket: async () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-      // Get the user's groups to join those rooms
-      let userGroups = [];
-      try {
-        const res = await axiosInstance.get("/groups");
-        userGroups = res.data.map(g => g._id);
-      } catch (error) {
-        console.log("Error loading user groups for socket:", error);
-      }
-
-      // Close existing socket if any
-    if (get().socket) {
-      get().socket.disconnect();
-    }
-
-    const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-        groups: JSON.stringify(userGroups)
-      },
-      transports: ["websocket"] 
-    });
-    socket.connect();
-    console.log("Socket connecting...");
-
-    socket.on("connect", () => {
-      console.log("Socket connected successfully");
-    });
-    
-    socket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
-    set({ socket: socket });
-
-    socket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
-    });
-
+   try {
+     // Get the user's groups to join those rooms
+     let userGroups = [];
+     try {
+       const res = await axiosInstance.get("/groups");
+       userGroups = res.data.map(g => g._id);
+     } catch (error) {
+       console.log("Error loading user groups for socket:", error);
+     }
+ 
+     // Close existing socket if any
+     if (get().socket) {
+       get().socket.disconnect();
+     }
+ 
+     const socket = io(BASE_URL, {
+       query: {
+         userId: authUser._id,
+         groups: JSON.stringify(userGroups)
+       },
+       transports: ["websocket"],
+       reconnection: true,        // Enable reconnection
+       reconnectionAttempts: 5,   // Try to reconnect 5 times
+       reconnectionDelay: 1000,   // Wait 1 second before attempting reconnection
+       timeout: 10000             // 10 second timeout
+     });
+     socket.connect();
+     console.log("Socket connecting...");
+ 
+     socket.on("connect", () => {
+       console.log("Socket connected successfully");
+     });
+ 
+     socket.on("connect_error", (error) => {
+       console.error("Socket connection error:", error);
+     });
+ 
+     socket.on("disconnect", () => {
+       console.log("Socket disconnected");
+       // Try reconnecting after disconnect
+       setTimeout(() => {
+         if (!get().socket?.connected && get().authUser) {
+           get().connectSocket();
+         }
+       }, 5000);
+     });
+     set({ socket: socket });
+ 
+     socket.on("getOnlineUsers", (userIds) => {
+       set({ onlineUsers: userIds });
+     });
+ 
      // Handle group-related events
      socket.on("newGroup", (group) => {
-      // Alert about new group addition
-      toast.success(`You've been added to group: ${group.name}`);
-      // Join the new group's room
-      socket.emit("joinGroup", group._id);
-      // Update groups list
-      useGroupStore.getState().getUserGroups();
-    });
-
-    socket.on("groupDeleted", ({ groupId, groupName }) => {
-      toast.info(`Group "${groupName}" has been deleted`);
+       // Alert about new group addition
+       toast.success(`You've been added to group: ${group.name}`);
+       // Join the new group's room
+       socket.emit("joinGroup", group._id);
+       // Update groups list
+       useGroupStore.getState().getUserGroups();
+     });
+ 
+     socket.on("groupDeleted", ({ groupId, groupName }) => {
+       toast.info(`Group "${groupName}" has been deleted`);
        // Leave the group room
        socket.emit("leaveGroup", groupId);
        // Update groups list
        useGroupStore.getState().getUserGroups();
-    });
-
-    socket.on("addedToGroup", (group) => {
-      toast.success(`You've been added to group: ${group.name}`);
+     });
+ 
+     socket.on("addedToGroup", (group) => {
+       toast.success(`You've been added to group: ${group.name}`);
        // Join the group room
        socket.emit("joinGroup", group._id);
        // Update groups list
        useGroupStore.getState().getUserGroups();
-    });
-
-    socket.on("newGroupMessage", (message) => {
-      console.log("New group message received via socket:", message);
-      // The handling of this event is now in useGroupStore
-    });
-
-      // Subscribe to unread messages
-      setTimeout(() => {
-        useChatStore.getState().subscribeToUnreadMessages();
-        useGroupStore.getState().subscribeToUnreadGroupMessages();
-      }, 500);
-      
+     });
+ 
+     socket.on("newGroupMessage", (message) => {
+       console.log("New group message received via socket:", message);
+       // The handling of this event is now in useGroupStore
+     });
+ 
+     // Subscribe to unread messages
+     setTimeout(() => {
+       useChatStore.getState().subscribeToUnreadMessages();
+       useGroupStore.getState().subscribeToUnreadGroupMessages();
+     }, 500);
+   } catch (error) {
+    console.error("Error in connectSocket:", error);
+    // Try again after error
+    setTimeout(() => {
+      if (get().authUser) {
+        get().connectSocket();
+      }
+    }, 5000);
+   }
   },
 
   disconnectSocket: () => {
-    if (get().socket?.connected){
+    if (get().socket?.connected) {
       get().socket.disconnect();
       set({ socket: null });
       console.log("Socket disconnected");

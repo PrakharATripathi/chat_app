@@ -11,6 +11,8 @@ const io = new Server(server, {
     origin: Frontend_URI,
     methods: ["GET", "POST"],
   },
+  pingTimeout: 60000, // Increase ping timeout
+  pingInterval: 25000, // Adjust ping interval
 });
 
 export function getReceiverSocketId(userId) {
@@ -19,6 +21,7 @@ export function getReceiverSocketId(userId) {
 
 // used to store online users
 const userSocketMap = {}; // {userId: socketId}
+const userGroupsMap = {}; // {userId: [groupId1, groupId2, ...]}
 
 io.on("connection", (socket) => {
   console.log("A user connected", socket.id);
@@ -35,6 +38,7 @@ io.on("connection", (socket) => {
     try {
       const groups = JSON.parse(socket.handshake.query.groups);
       if (Array.isArray(groups)) {
+        userGroupsMap[userId] = groups;
         groups.forEach(groupId => {
           socket.join(`group:${groupId}`);
           console.log(`User ${userId} joined group:${groupId} on connect`);
@@ -52,12 +56,35 @@ io.on("connection", (socket) => {
   socket.on("joinGroup", (groupId) => {
     socket.join(`group:${groupId}`);
     console.log(`User ${userId} joined group:${groupId}`);
+
+     // Update user's groups map
+     if (!userGroupsMap[userId]) {
+      userGroupsMap[userId] = [];
+    }
+    if (!userGroupsMap[userId].includes(groupId)) {
+      userGroupsMap[userId].push(groupId);
+    }
   });
 
    // Handle leaving a group
    socket.on("leaveGroup", (groupId) => {
     socket.leave(`group:${groupId}`);
     console.log(`User ${userId} left group:${groupId}`);
+
+    // Update user's groups map
+    if (userGroupsMap[userId]) {
+      userGroupsMap[userId] = userGroupsMap[userId].filter(id => id !== groupId);
+    }
+  });
+
+   // Handle reconnection - rejoin all groups
+   socket.on("rejoinGroups", () => {
+    if (userId && userGroupsMap[userId]) {
+      userGroupsMap[userId].forEach(groupId => {
+        socket.join(`group:${groupId}`);
+        console.log(`User ${userId} rejoined group:${groupId}`);
+      });
+    }
   });
 
   socket.on("disconnect", () => {

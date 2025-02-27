@@ -122,7 +122,7 @@ export const addMembers = async (req, res) => {
 
     // Add new members
     const updatedMembers = [...new Set([...group.members.map(m => m.toString()), ...members])];
-    
+
     group.members = updatedMembers;
     await group.save();
 
@@ -330,17 +330,17 @@ export const sendGroupMessage = async (req, res) => {
     const populatedMessage = await GroupMessage.findById(newMessage._id)
       .populate("senderId", "fullName profilePic");
 
-    // Emit message to all group members
-    // group.members.forEach((memberId) => {
-    //   if (memberId.toString() !== senderId.toString()) {
-    //     const memberSocketId = io.sockets.adapter.rooms.get(memberId.toString());
-    //     if (memberSocketId) {
-    //       io.to(memberSocketId).emit("newGroupMessage", populatedMessage);
-    //     }
-    //   }
-    // });
-    // Emit message to all group members using the group room
     io.to(`group:${groupId}`).emit("newGroupMessage", populatedMessage);
+
+     // For reliability, also emit to each member individually
+     group.members.forEach((memberId) => {
+      if (memberId.toString() !== senderId.toString()) {
+        const memberSocketId = io.sockets.adapter.rooms.get(memberId.toString());
+        if (memberSocketId) {
+          io.to(memberSocketId).emit("newGroupMessage", populatedMessage);
+        }
+      }
+    });
 
     res.status(201).json(populatedMessage);
   } catch (error) {
