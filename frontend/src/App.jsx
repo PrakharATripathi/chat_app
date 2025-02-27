@@ -43,7 +43,7 @@ const App = () => {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [checkAuth,socket]);
+  }, [checkAuth]);
 
 
   if (isCheckingAuth && !authUser)
