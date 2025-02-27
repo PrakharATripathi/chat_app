@@ -4,8 +4,8 @@ import { io } from "socket.io-client";
 import { axiosInstance } from "../lib/axios";
 import { useChatStore } from "./useChatStore";
 import { useGroupStore } from "./useGroupStore";
+import { BASE_URL } from "../constant";
 
-const BASE_URL = "https://chat-app-8wm6.onrender.com" 
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
