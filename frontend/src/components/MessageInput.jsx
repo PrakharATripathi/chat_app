@@ -4,13 +4,13 @@ import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useGroupStore } from "../store/useGroupStore";
 
-const MessageInput = ({isGroupChat}) => {
+const MessageInput = ({ isGroupChat }) => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
-  const {sendGroupMessage} = useGroupStore();
+  const { sendGroupMessage } = useGroupStore();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -34,27 +34,29 @@ const MessageInput = ({isGroupChat}) => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
-
+    // Clear form immediately for a responsive feel
+    const messageText = text.trim();
+    const messageImage = imagePreview;
+    setText("");
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     try {
       setIsSubmitting(true);
-      if(isGroupChat){
+      if (isGroupChat) {
         await sendGroupMessage({
-          text: text.trim(),
-          image: imagePreview,
+          text:messageText,
+          image: messageImage,
         })
-      }else{
+      } else {
         await sendMessage({
-          text: text.trim(),
-          image: imagePreview,
+          text: messageText,
+          image: messageImage,
         });
       }
-      // Clear form
-      setText("");
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
-    }finally{
+      toast.error("Failed to send message. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -111,7 +113,7 @@ const MessageInput = ({isGroupChat}) => {
         <button
           type="submit"
           className={`flex items-center justify-center w-10 h-10 rounded-full
-            ${(!text.trim() && !imagePreview) || isSubmitting
+            ${(!text.trim() && !imagePreview || isSubmitting) 
               ? "bg-base-200 text-base-content/50"
               : "bg-primary text-primary-foreground"
             } transition-colors`}

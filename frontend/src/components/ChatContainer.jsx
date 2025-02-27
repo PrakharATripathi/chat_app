@@ -16,6 +16,7 @@ const ChatContainer = ({ isGroupChat = false }) => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+    sendMessage
   } = useChatStore();
   const {
     groupMessages,
@@ -24,7 +25,8 @@ const ChatContainer = ({ isGroupChat = false }) => {
     selectedGroup,
     subscribeToGroupMessages,
     unsubscribeFromGroupMessages,
-    joinGroupRoom
+    joinGroupRoom,
+    sendGroupMessage
   } = useGroupStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -51,11 +53,11 @@ const ChatContainer = ({ isGroupChat = false }) => {
   // Separate effect for handling group messages
   useEffect(() => {
     if (isGroupChat && selectedGroup?._id) {
-      getGroupMessages(selectedGroup._id);      
+      getGroupMessages(selectedGroup._id);
       // Make sure to join the group room
-      joinGroupRoom(selectedGroup._id);  
+      joinGroupRoom(selectedGroup._id);
       // Set up subscription for real-time updates
-      subscribeToGroupMessages();  
+      subscribeToGroupMessages();
       return () => {
         unsubscribeFromGroupMessages();
       };
@@ -129,12 +131,17 @@ const ChatContainer = ({ isGroupChat = false }) => {
               <time className="text-xs opacity-50 ml-1">
                 {formatMessageTime(message.createdAt)}
               </time>
+              {/* {message.isOptimistic && (
+                <span className="text-xs ml-2 italic opacity-70">Sending...</span>
+              )} */}
+              {message.failed && (
+                <span className="text-xs ml-2 italic text-red-500">Failed to send</span>
+              )}
             </div>
-            <div className={`chat-bubble flex flex-col ${
-              (isGroupChat ? message.senderId._id === authUser._id : message.senderId === authUser._id)
-                ? "bg-primary text-primary-foreground"
-                : "bg-base-200"
-            }`}>
+            <div className={`chat-bubble flex flex-col ${(isGroupChat ? message.senderId._id === authUser._id : message.senderId === authUser._id)
+              ? `bg-primary text-primary-foreground  ${message.isOptimistic ? 'opacity-70' : ''}  `
+              : "bg-base-200"
+              }`}>
               {message.image && (
                 <img
                   src={message.image}
@@ -143,6 +150,35 @@ const ChatContainer = ({ isGroupChat = false }) => {
                 />
               )}
               {message.text && <p>{message.text}</p>}
+              {message.failed && (
+                <button
+                  onClick={() => {
+                    // Re-try sending the failed message
+                    const messageData = {
+                      text: message.text,
+                      image: message.image
+                    };
+                    if (isGroupChat) {
+                      sendGroupMessage(messageData);
+                    } else {
+                      sendMessage(messageData);
+                    }
+                    // Remove the failed message
+                    if (isGroupChat) {
+                      set(state => ({
+                        groupMessages: state.groupMessages.filter(msg => msg._id !== message._id)
+                      }));
+                    } else {
+                      useChatStore.setState(state => ({
+                        messages: state.messages.filter(msg => msg._id !== message._id)
+                      }));
+                    }
+                  }}
+                  className="text-xs mt-1 underline"
+                >
+                  Retry
+                </button>
+              )}
             </div>
           </div>
         ))}

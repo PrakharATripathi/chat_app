@@ -55,7 +55,7 @@ export const createGroup = async (req, res) => {
 
     res.status(201).json(populatedGroup);
   } catch (error) {
-    console.log("Error in createGroup controller:", error.message);
+    console.error("Error in createGroup controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -71,7 +71,7 @@ export const getUserGroups = async (req, res) => {
 
     res.status(200).json(groups);
   } catch (error) {
-    console.log("Error in getUserGroups controller:", error.message);
+    console.error("Error in getUserGroups controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -97,7 +97,7 @@ export const getGroupDetails = async (req, res) => {
 
     res.status(200).json(group);
   } catch (error) {
-    console.log("Error in getGroupDetails controller:", error.message);
+    console.error("Error in getGroupDetails controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -140,7 +140,7 @@ export const addMembers = async (req, res) => {
 
     res.status(200).json(updatedGroup);
   } catch (error) {
-    console.log("Error in addMembers controller:", error.message);
+    console.error("Error in addMembers controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -191,7 +191,7 @@ export const removeMember = async (req, res) => {
 
     res.status(200).json(updatedGroup);
   } catch (error) {
-    console.log("Error in removeMember controller:", error.message);
+    console.error("Error in removeMember controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -245,7 +245,7 @@ export const updateGroup = async (req, res) => {
 
     res.status(200).json(updatedGroup);
   } catch (error) {
-    console.log("Error in updateGroup controller:", error.message);
+    console.error("Error in updateGroup controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -287,7 +287,7 @@ export const deleteGroup = async (req, res) => {
 
     res.status(200).json({ message: "Group deleted successfully" });
   } catch (error) {
-    console.log("Error in deleteGroup controller:", error.message);
+    console.error("Error in deleteGroup controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -344,7 +344,7 @@ export const sendGroupMessage = async (req, res) => {
 
     res.status(201).json(populatedMessage);
   } catch (error) {
-    console.log("Error in sendGroupMessage controller:", error.message);
+    console.error("Error in sendGroupMessage controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -372,7 +372,7 @@ export const getGroupMessages = async (req, res) => {
 
     res.status(200).json(messages);
   } catch (error) {
-    console.log("Error in getGroupMessages controller:", error.message);
+    console.error("Error in getGroupMessages controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

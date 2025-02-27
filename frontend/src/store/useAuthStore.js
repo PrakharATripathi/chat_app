@@ -22,7 +22,7 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: res.data });
       get().connectSocket();
     } catch (error) {
-      console.log("Error in checkAuth:", error);
+      console.error("Error in checkAuth:", error);
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -77,7 +77,7 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
     } catch (error) {
-      console.log("error in update profile:", error);
+      console.error("error in update profile:", error);
       toast.error(error.response.data.message);
     } finally {
       set({ isUpdatingProfile: false });
@@ -95,7 +95,7 @@ export const useAuthStore = create((set, get) => ({
        const res = await axiosInstance.get("/groups");
        userGroups = res.data.map(g => g._id);
      } catch (error) {
-       console.log("Error loading user groups for socket:", error);
+       console.error("Error loading user groups for socket:", error);
      }
  
      // Close existing socket if any
