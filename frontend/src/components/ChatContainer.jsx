@@ -97,12 +97,13 @@ const ChatContainer = ({ isGroupChat = false }) => {
   };
 
   const getSenderProfilePic = (message) => {
+    console.log(message)
     if (isGroupChat) {
       const senderId = typeof message.senderId === 'object' ? message.senderId._id : message.senderId;
       const member = selectedGroup.members?.find(m => m._id === senderId);
       return member?.profilePic || "/avatar.png";
     }
-    return selectedUser.profilePic || "/avatar.png";
+    return message.senderId === authUser._id ? authUser.profilePic:selectedUser.profilePic || "/avatar.png";
   };
 
   return (
