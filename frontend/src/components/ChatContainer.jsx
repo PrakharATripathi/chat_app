@@ -27,7 +27,8 @@ const ChatContainer = ({ isGroupChat = false }) => {
     subscribeToGroupMessages,
     unsubscribeFromGroupMessages,
     joinGroupRoom,
-    sendGroupMessage
+    sendGroupMessage,
+    deleteGroupMessage
   } = useGroupStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -88,8 +89,7 @@ const ChatContainer = ({ isGroupChat = false }) => {
 
   const handleDeleteMessage = async (messageId) => {
     if (isGroupChat) {
-      // Implement group message deletion if needed
-      console.log("Group message deletion not implemented yet");
+      await deleteGroupMessage(messageId);
     } else {
       await deleteMessage(messageId);
     }

@@ -202,6 +202,36 @@ export const useGroupStore = create(
         }
       },
 
+      deleteGroupMessage:async(groupMessageId)=>{
+        try {
+          // Optimistically remove the message from the UI
+          set(state => ({
+            groupMessages: state.groupMessages.map(msg => 
+              msg._id === groupMessageId ? { ...msg, isDeleting: true } : msg
+            )
+          }));
+
+          // Call the API to delete the message
+          await axiosInstance.delete(`groups/messages/${groupMessageId}`);
+          
+          // Remove the message from state after successful deletion
+          set(state => ({
+            groupMessages: state.groupMessages.filter(msg => msg._id !== groupMessageId)
+          }));
+          
+          return true;
+        } catch (error) {
+          // Revert the optimistic update if deletion fails
+          set(state => ({
+            messages: state.messages.map(msg =>
+              msg._id === groupMessageId ? { ...msg, isDeleting: false } : msg
+            )
+          }));
+          toast.error("Failed to delete message");
+          return false;
+        }
+      },
+
       // Subscribe to group message updates
       subscribeToGroupMessages: () => {
         const { selectedGroup } = get();
@@ -246,7 +276,12 @@ export const useGroupStore = create(
           }));
         });
 
-        console.log("Subscribed to group messages for group:", selectedGroup._id);
+         // Listen for message deletion events
+         socket.on("groupMessageDeleted", (messageId) => {
+          set(state => ({
+            groupMessages: state.groupMessages.filter(message => message._id !== messageId)
+          }));
+        });
       },
 
       // Track unread messages for all groups
