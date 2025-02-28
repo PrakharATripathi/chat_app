@@ -376,3 +376,48 @@ export const getGroupMessages = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// Delete a group message
+export const deleteGroupMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
+
+    // Find the message
+    const message = await GroupMessage.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // Check if the user is the sender of the message
+    if (message.senderId.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "You can only delete your own messages" });
+    }
+
+    // Get the group to notify members after deletion
+    const group = await Group.findById(message.groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Delete the message
+    await GroupMessage.findByIdAndDelete(messageId);
+
+    // Notify all group members about the deletion
+    io.to(`group:${message.groupId}`).emit("groupMessageDeleted", messageId);
+
+    // For reliability, also emit to each member individually
+    group.members.forEach((memberId) => {
+      const memberSocketId = io.sockets.adapter.rooms.get(memberId.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("groupMessageDeleted", messageId);
+      }
+    });
+
+    res.status(200).json({ message: "Message deleted successfully" });
+  } catch (error) {
+    console.error("Error in deleteGroupMessage controller:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

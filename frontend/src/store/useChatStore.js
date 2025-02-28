@@ -45,6 +45,7 @@ export const useChatStore = create(
           set({ isMessagesLoading: false });
         }
       },
+      
       sendMessage: async (messageData) => {
         const { selectedUser, messages } = get();
         // Create an optimistic message
@@ -87,6 +88,36 @@ export const useChatStore = create(
         }
       },
 
+      deleteMessage: async (messageId) => {
+        try {
+          // Optimistically remove the message from the UI
+          set(state => ({
+            messages: state.messages.map(msg => 
+              msg._id === messageId ? { ...msg, isDeleting: true } : msg
+            )
+          }));
+
+          // Call the API to delete the message
+          await axiosInstance.delete(`/messages/${messageId}`);
+          
+          // Remove the message from state after successful deletion
+          set(state => ({
+            messages: state.messages.filter(msg => msg._id !== messageId)
+          }));
+          
+          return true;
+        } catch (error) {
+          // Revert the optimistic update if deletion fails
+          set(state => ({
+            messages: state.messages.map(msg =>
+              msg._id === messageId ? { ...msg, isDeleting: false } : msg
+            )
+          }));
+          toast.error("Failed to delete message");
+          return false;
+        }
+      },
+
       subscribeToMessages: () => {
         const { selectedUser } = get();
         if (!selectedUser) return;
@@ -100,6 +131,13 @@ export const useChatStore = create(
           set({
             messages: [...get().messages, newMessage],
           });
+        });
+
+        // Listen for message deletion events
+        socket.on("messageDeleted", (messageId) => {
+          set(state => ({
+            messages: state.messages.filter(message => message._id !== messageId)
+          }));
         });
       },
 
@@ -142,6 +180,7 @@ export const useChatStore = create(
       unsubscribeFromMessages: () => {
         const socket = useAuthStore.getState().socket;
         socket.off("newMessage");
+        socket.off("messageDeleted");
       },
 
       setSelectedUser: (selectedUser) => {

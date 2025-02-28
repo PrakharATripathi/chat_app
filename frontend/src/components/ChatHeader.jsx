@@ -4,6 +4,7 @@ import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 
 const ChatHeader = ({ isGroupChat }) => {
+  console.log(isGroupChat)
   const { selectedUser, setSelectedUser } = useChatStore();
   const { selectedGroup, setSelectedGroup } = useGroupStore();
   const { onlineUsers } = useAuthStore();
@@ -16,7 +17,7 @@ const ChatHeader = ({ isGroupChat }) => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={isGroupChat ? selectedGroup?.profilePic || "/avatar.png"  : selectedUser?.profilePic || "/avatar.png"} alt="img" />
+              <img src={isGroupChat ? selectedGroup?.groupPic || "/avatar.png"  : selectedUser?.profilePic || "/avatar.png"} alt="img" />
             </div>
           </div>
 

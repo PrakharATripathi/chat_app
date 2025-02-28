@@ -1,5 +1,5 @@
 import express from "express";
-import { addMembers, createGroup, deleteGroup, getGroupDetails, getGroupMessages, getUserGroups, removeMember, sendGroupMessage, updateGroup } from "../controllers/group.controller.js";
+import { addMembers, createGroup, deleteGroup, deleteGroupMessage, getGroupDetails, getGroupMessages, getUserGroups, removeMember, sendGroupMessage, updateGroup } from "../controllers/group.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
 
@@ -19,5 +19,6 @@ router.delete("/:groupId/members/:memberId", protectRoute, removeMember);
 // Group messaging routes
 router.post("/:id/messages", protectRoute, sendGroupMessage);
 router.get("/:id/messages", protectRoute, getGroupMessages);
+router.delete("/messages/:messageId", protectRoute, deleteGroupMessage);
 
 export default router;
