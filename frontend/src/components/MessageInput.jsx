@@ -46,7 +46,7 @@ const MessageInput = ({ isGroupChat }) => {
         await sendGroupMessage({
           text:messageText,
           image: messageImage,
-        })
+        });
       } else {
         await sendMessage({
           text: messageText,
@@ -73,25 +73,35 @@ const MessageInput = ({ isGroupChat }) => {
             />
             <button
               onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
-              flex items-center justify-center"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
               type="button"
             >
-              <X className="size-3" />
+              <X className="size-4" />
             </button>
           </div>
         </div>
       )}
 
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <div className="flex-1 flex gap-2">
+        <div className="relative flex-1">
           <input
             type="text"
-            className="w-full input input-bordered rounded-lg input-sm sm:input-md"
+            className="w-full input input-bordered rounded-lg input-sm sm:input-md pr-10"
             placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
+          
+          <button
+            type="button"
+            className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full
+                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isSubmitting}
+          >
+            <Image size={22} />
+          </button>
+          
           <input
             type="file"
             accept="image/*"
@@ -99,17 +109,8 @@ const MessageInput = ({ isGroupChat }) => {
             ref={fileInputRef}
             onChange={handleImageChange}
           />
-
-          <button
-            type="button"
-            className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isSubmitting}
-          >
-            <Image size={20} />
-          </button>
         </div>
+        
         <button
           type="submit"
           className={`flex items-center justify-center w-10 h-10 rounded-full
@@ -125,4 +126,5 @@ const MessageInput = ({ isGroupChat }) => {
     </div>
   );
 };
+
 export default MessageInput;
