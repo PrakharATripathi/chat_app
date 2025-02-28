@@ -157,7 +157,7 @@ const ChatContainer = ({ isGroupChat = false }) => {
                   />
                 </div>
               </div>
-              <div className="chat-header">
+              <div className="chat-header flex items-center">
                 {isGroupChat && message.senderId !== authUser._id && (
                   <span className="font-bold mr-1">{renderMessageSender(message)}</span>
                 )}
@@ -178,19 +178,24 @@ const ChatContainer = ({ isGroupChat = false }) => {
                 {isSender && !message.isDeleting && (
                   <div className="relative inline-block ml-2" onClick={(e) => e.stopPropagation()}>
                     <button 
-                      className="text-xs opacity-50 hover:opacity-100 focus:outline-none"
+                      className="text-xs p-1 rounded-full opacity-50 hover:opacity-100 hover:bg-base-200 focus:outline-none"
                       onClick={(e) => toggleMenu(e, message._id)}
+                      aria-label="Message options"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                       </svg>
                     </button>
                     {menuOpen === message._id && (
-                      <div className="absolute z-10 right-0 mt-1 bg-base-100 shadow-lg rounded-lg py-1 w-28">
+                      <div className="absolute z-10 right-0 mt-1 bg-base-100 shadow-lg rounded-lg py-1 w-28 border border-base-300">
                         <button 
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-base-200 text-red-500"
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-base-200 text-red-500 flex items-center gap-2"
                           onClick={() => handleDeleteMessage(message._id)}
                         >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                          </svg>
                           Delete
                         </button>
                       </div>
@@ -201,7 +206,9 @@ const ChatContainer = ({ isGroupChat = false }) => {
               <div className={`chat-bubble flex flex-col ${isSender
                 ? `bg-primary text-primary-foreground ${message.isOptimistic ? 'opacity-70' : ''} ${message.isDeleting ? 'opacity-50' : ''}`
                 : "bg-base-200"
-                }`}>
+                }`}
+                style={{ maxWidth: '80%', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+              >
                 {message.image && (
                   <img
                     src={message.image}
@@ -209,7 +216,7 @@ const ChatContainer = ({ isGroupChat = false }) => {
                     className="sm:max-w-[200px] rounded-md mb-2"
                   />
                 )}
-                {message.text && <p>{message.text}</p>}
+                {message.text && <p className="whitespace-pre-wrap">{message.text}</p>}
                 {message.failed && (
                   <button
                     onClick={() => {
@@ -225,7 +232,7 @@ const ChatContainer = ({ isGroupChat = false }) => {
                       }
                       // Remove the failed message
                       if (isGroupChat) {
-                        set(state => ({
+                        useGroupStore.setState(state => ({
                           groupMessages: state.groupMessages.filter(msg => msg._id !== message._id)
                         }));
                       } else {
@@ -250,4 +257,4 @@ const ChatContainer = ({ isGroupChat = false }) => {
   );
 };
 
-export default ChatContainer; 
+export default ChatContainer;

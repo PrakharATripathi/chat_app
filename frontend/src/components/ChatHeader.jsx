@@ -4,7 +4,6 @@ import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 
 const ChatHeader = ({ isGroupChat }) => {
-  console.log(isGroupChat)
   const { selectedUser, setSelectedUser } = useChatStore();
   const { selectedGroup, setSelectedGroup } = useGroupStore();
   const { onlineUsers } = useAuthStore();
