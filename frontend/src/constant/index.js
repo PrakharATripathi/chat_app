@@ -37,4 +37,4 @@ export const THEMES = [
   ];
 
 // export const BASE_URL = "http://localhost:4000"
-export const BASE_URL = "https://chat-app-6le8.onrender.com"
+export const BASE_URL = "https://chat-app-8wm6.onrender.com"
