@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { jwt_secret } from "../constant/constant.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
@@ -10,7 +9,7 @@ export const protectRoute = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized - No Token Provided" });
     }
 
-    const decoded = jwt.verify(token,jwt_secret);
+    const decoded = jwt.verify(token,process.env.jwt_secret);
 
     if (!decoded) {
       return res.status(401).json({ message: "Unauthorized - Invalid Token" });

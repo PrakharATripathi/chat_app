@@ -1,14 +1,13 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import { Frontend_URI } from "../constant/constant.js";
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: Frontend_URI,
+    origin: process.env.Frontend_URI,
     methods: ["GET", "POST"],
   },
   pingTimeout: 60000, // Increase ping timeout

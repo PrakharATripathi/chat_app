@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import 'dotenv/config';
 
 // import path from "path";
 
@@ -9,7 +10,6 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.routes.js"
 import messageRoutes from "./routes/message.routes.js";
 import groupsRoutes from "./routes/group.routes.js"
-import { Frontend_URI, port } from "./constant/constant.js";
 import { app, server } from "./lib/socket.js";
 // import { app, server } from "./lib/socket.js";
 
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin:Frontend_URI,
+    origin:process.env.Frontend_URI,
     credentials: true,
   })
 );
@@ -37,8 +37,8 @@ app.use("/api/groups", groupsRoutes);
 //   });
 // }
 
-server.listen(port, () => {
-  console.log("server is running on PORT:" + port);
+server.listen(process.env.PORT, () => {
+  console.log("server is running on PORT:" + process.env.PORT);
   connectDB();
 });
 

@@ -3,7 +3,7 @@ import { jwt_secret } from "../constant/constant.js";
 import path from "path";
 
 export const generateToken = (userId, res) => {
-  const token = jwt.sign({ userId },jwt_secret, {
+  const token = jwt.sign({ userId },process.env.jwt_secret, {
     expiresIn: "7d",
   });
 
