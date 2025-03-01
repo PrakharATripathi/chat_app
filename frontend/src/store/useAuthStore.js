@@ -4,7 +4,6 @@ import { io } from "socket.io-client";
 import { axiosInstance } from "../lib/axios";
 import { useChatStore } from "./useChatStore";
 import { useGroupStore } from "./useGroupStore";
-import { BASE_URL } from "../constant";
 
 
 export const useAuthStore = create((set, get) => ({
@@ -103,7 +102,7 @@ export const useAuthStore = create((set, get) => ({
        get().socket.disconnect();
      }
  
-     const socket = io(BASE_URL, {
+     const socket = io(import.meta.env.VITE_BASE_URL, {
        query: {
          userId: authUser._id,
          groups: JSON.stringify(userGroups)
