@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
-import chaticon from "../../public/chat.png"
+import chaticon from "../assets/chat.png"
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();

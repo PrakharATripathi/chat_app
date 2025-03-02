@@ -1,5 +1,5 @@
 import { MessageSquare } from "lucide-react";
-import chaticon from "../../public/chat.png"
+import chaticon from "../assets/chat.png"
 
 const NoChatSelected = () => {
   return (
