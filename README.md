@@ -2,6 +2,9 @@
 
 A real-time chat application built using the MERN stack with WebSockets. The app includes various features such as real-time messaging, group chats, theme customization, and more.
 
+## Application Flow
+Link:https://app.eraser.io/workspace/WN8BmCfltUbRpWhTT6gm?origin=share&elements=fxqSyaSOgrIvf9ih3g543A
+
 ## Features
 - Real-time messaging with WebSockets
 - Live chat notifications for unread messages
